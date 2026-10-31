@@ -1,0 +1,2321 @@
+{
+  "info": {
+    "_postman_id": "c85b15c3-4253-4876-8151-5279479f71ee",
+    "name": "StockPro API - Phase 1-3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56579903",
+    "description": "Login ก่อน (คำสั่งแรก) ระบบจะเก็บ JWT ในตัวแปร token แล้วคำสั่งที่แก้ข้อมูลแนบ Bearer ให้เอง.\nกด Run ทั้ง collection ได้อย่างปลอดภัย: สร้างสินค้า/หมวดหมู่/ผู้จัดจำหน่ายใหม่แล้วแก้และลบเฉพาะของที่สร้างเอง (ไม่แตะข้อมูลตั้งต้น), เปลี่ยนรหัสผ่านแล้วเปลี่ยนกลับให้. หากรันแยกทีละคำสั่ง ต้องรัน Create ก่อน จึงจะมี id ให้ Update/Delete.\nตัวแปร adminPassword ต้องตรงกับรหัสผ่าน admin ปัจจุบัน."
+  },
+  "item": [
+    {
+      "name": "Login Admin (save token)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login success', function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) pm.collectionVariables.set('token', pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().status).to.eql(\"OK\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Health Check",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "50"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"32-S7l7QSlLVfXn2daEw5l3MNO4+xo\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:06:54 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"OK\",\n  \"message\": \"Product API is running\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Products",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().data).to.be.an(\"array\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "List Products",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "3939"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"f63-Q3XKnONi96JIk15F24E8VEkc5Z0\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:09:48 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"ดึงข้อมูลสินค้าทั้งหมดสำเร็จ\",\n  \"total\": 18,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"sku\": \"SKU-ELE-001\",\n      \"product_name\": \"Wireless Ergonomic Mouse\",\n      \"price\": \"890.00\",\n      \"stock_quantity\": 50,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T09:18:58.000Z\"\n    },\n    {\n      \"id\": 2,\n      \"sku\": \"SKU-APP-001\",\n      \"product_name\": \"Cotton Oversized T-Shirt\",\n      \"price\": \"350.00\",\n      \"stock_quantity\": 120,\n      \"category_name\": \"Apparel\",\n      \"supplier_name\": \"FashionHub Thailand\",\n      \"created_at\": \"2026-10-08T09:18:58.000Z\"\n    },\n    {\n      \"id\": 3,\n      \"sku\": \"SKU-HOM-001\",\n      \"product_name\": \"Stainless Steel Coffee Maker\",\n      \"price\": \"2490.00\",\n      \"stock_quantity\": 15,\n      \"category_name\": \"Home & Kitchen\",\n      \"supplier_name\": \"SmartHome Trading\",\n      \"created_at\": \"2026-10-08T09:18:58.000Z\"\n    },\n    {\n      \"id\": 4,\n      \"sku\": \"SKU-PM-1791476416440\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T09:20:16.000Z\"\n    },\n    {\n      \"id\": 6,\n      \"sku\": \"SKU-PM-1791476460\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T09:20:59.000Z\"\n    },\n    {\n      \"id\": 8,\n      \"sku\": \"SKU-PM-1791476771\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T09:26:11.000Z\"\n    },\n    {\n      \"id\": 10,\n      \"sku\": \"SKU-PM-1791476783\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T09:26:22.000Z\"\n    },\n    {\n      \"id\": 12,\n      \"sku\": \"SKU-PM-1791478217\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T09:50:16.000Z\"\n    },\n    {\n      \"id\": 14,\n      \"sku\": \"SKU-PM-1791478894\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T10:01:34.000Z\"\n    },\n    {\n      \"id\": 16,\n      \"sku\": \"SKU-PM-1791479143\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T10:05:42.000Z\"\n    },\n    {\n      \"id\": 18,\n      \"sku\": \"SKU-PM-1791479333\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T10:08:53.000Z\"\n    },\n    {\n      \"id\": 20,\n      \"sku\": \"SKU-PM-{{$timestamp}}\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T10:11:35.000Z\"\n    },\n    {\n      \"id\": 22,\n      \"sku\": \"SKU-PM-1791479499\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-08T10:11:38.000Z\"\n    },\n    {\n      \"id\": 24,\n      \"sku\": \"SKU-PM-1791535517\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-09T01:45:17.000Z\"\n    },\n    {\n      \"id\": 26,\n      \"sku\": \"SKU-PM-1791535915\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-09T01:51:55.000Z\"\n    },\n    {\n      \"id\": 28,\n      \"sku\": \"SKU-PM-1791537323\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-09T02:15:22.000Z\"\n    },\n    {\n      \"id\": 30,\n      \"sku\": \"SKU-PM-1791537460\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-09T02:17:40.000Z\"\n    },\n    {\n      \"id\": 32,\n      \"sku\": \"SKU-PM-1791654612\",\n      \"product_name\": \"USB-C Cable\",\n      \"price\": \"199.50\",\n      \"stock_quantity\": 30,\n      \"category_name\": \"Electronics\",\n      \"supplier_name\": \"TechSupply Co., Ltd.\",\n      \"created_at\": \"2026-10-10T10:50:12.000Z\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Product by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().data).to.have.property(\"sku\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "1"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Get Product by ID",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "1"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "301"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"12d-8nrmFAiPmjMn4P8/xmC5lk1+shE\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:09:32 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"ดึงข้อมูลสินค้าสำเร็จ\",\n  \"data\": {\n    \"id\": 1,\n    \"sku\": \"SKU-ELE-001\",\n    \"product_name\": \"Wireless Ergonomic Mouse\",\n    \"price\": \"890.00\",\n    \"stock_quantity\": 50,\n    \"category_name\": \"Electronics\",\n    \"supplier_name\": \"TechSupply Co., Ltd.\",\n    \"created_at\": \"2026-10-08T09:18:58.000Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Product - Not Found (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "  pm.response.to.have.status(404);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().error.code).to.eql(\"NOT_FOUND\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products/99999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "99999"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Get Product - Not Found (404)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "99999"
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "94"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"5e-EVh/F7fr8Ab7XyoGbcUv1mcZp0I\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:10:39 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"ไม่พบข้อมูลสินค้า\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().data).to.have.property(\"id\");",
+              "});",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"newProductId\", pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"category_id\": 1,\n  \"supplier_id\": 1,\n  \"name\": \"USB-C Cable\",\n  \"price\": 199.5,\n  \"sku\": \"SKU-PM-{{$timestamp}}\",\n  \"stock_quantity\": 30\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Product",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"supplier_id\": 1,\n  \"name\": \"USB-C Cable\",\n  \"price\": 199.5,\n  \"sku\": \"SKU-PM-{{$timestamp}}\",\n  \"stock_quantity\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "143"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"8f-dIwV1HvsEyPyDa9AUWrggIvbuPo\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:11:07 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"เพิ่มสินค้าสำเร็จ\",\n  \"data\": {\n    \"id\": 35,\n    \"name\": \"USB-C Cable\",\n    \"sku\": \"SKU-PM-1791691868\",\n    \"price\": 199.5\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Product - Duplicate SKU (500)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 500\", function () {",
+              "  pm.response.to.have.status(500);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().error.code).to.eql(\"INTERNAL_SERVER_ERROR\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"category_id\": 1,\n  \"supplier_id\": 1,\n  \"name\": \"Duplicate\",\n  \"price\": 10,\n  \"sku\": \"SKU-ELE-001\",\n  \"stock_quantity\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Product - Duplicate SKU (500)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"supplier_id\": 1,\n  \"name\": \"Duplicate\",\n  \"price\": 10,\n  \"sku\": \"SKU-ELE-001\",\n  \"stock_quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            }
+          },
+          "status": "Internal Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "210"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"d2-VuMHyFloApwyBgZRg9h/AWz4DOg\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:10:53 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": \"INTERNAL_SERVER_ERROR\",\n    \"message\": \"เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์\",\n    \"details\": \"Duplicate entry 'SKU-ELE-001' for key 'products.sku'\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Price & Stock (สินค้าที่เพิ่งสร้าง)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json()).to.have.property(\"updated_id\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 890,\n  \"stock_quantity\": 50\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products/{{newProductId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "{{newProductId}}"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Update Price & Stock",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 890,\n  \"stock_quantity\": 50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "1"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "121"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"79-I0HEhBfR1dVLNn0301kMObwx6Hc\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:11:55 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"อัปเดตราคาสินค้าและสต็อกสำเร็จ\",\n  \"updated_id\": \"1\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Product - Not Found (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "  pm.response.to.have.status(404);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().error.code).to.eql(\"NOT_FOUND\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 1,\n  \"stock_quantity\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products/99999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "99999"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Update Product - Not Found (404)",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 1,\n  \"stock_quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "99999"
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "121"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"79-e4nZvhDBhNGGyiZPqhhArqB2LPg\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:11:26 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"ไม่พบสินค้าที่ต้องการแก้ไข\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Product Price in USD (External API)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().data).to.have.property(\"fallback\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products/1/price?currency=USD",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "1",
+            "price"
+          ],
+          "query": [
+            {
+              "key": "currency",
+              "value": "USD"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Product Price in USD (External API)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/1/price?currency=USD",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "1",
+                "price"
+              ],
+              "query": [
+                {
+                  "key": "currency",
+                  "value": "USD"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "214"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"d6-gG8fnvHXS+WI6XAcn/hP0nOe3Y0\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:11:38 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"แปลงราคาสินค้าสำเร็จ\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Wireless Ergonomic Mouse\",\n    \"price_thb\": 890,\n    \"currency\": \"USD\",\n    \"rate\": 0.029791,\n    \"converted_price\": 26.51,\n    \"fallback\": false\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Product Price - Invalid Currency (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().error.code).to.eql(\"BAD_REQUEST\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products/1/price?currency=XYZ",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "1",
+            "price"
+          ],
+          "query": [
+            {
+              "key": "currency",
+              "value": "XYZ"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Product Price - Invalid Currency (400)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/1/price?currency=XYZ",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "1",
+                "price"
+              ],
+              "query": [
+                {
+                  "key": "currency",
+                  "value": "XYZ"
+                }
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "100"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"64-ImXnPzRxzEahPb5CvhMf7R3r0tQ\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:12:37 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"error\": {\n    \"code\": \"BAD_REQUEST\",\n    \"message\": \"ไม่รองรับสกุลเงิน XYZ\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Category",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().data).to.have.property(\"id\");",
+              "});",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"newCategoryId\", pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sports-{{$timestamp}}\",\n  \"description\": \"อุปกรณ์กีฬา\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/categories",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "categories"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Category",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sports-{{$timestamp}}\",\n  \"description\": \"อุปกรณ์กีฬา\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "165"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"a5-Yzdqepx38MB2MD0npMA5riFfyns\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:12:03 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"เพิ่มหมวดหมู่สำเร็จ\",\n  \"data\": {\n    \"id\": 20,\n    \"name\": \"Sports-1791691923\",\n    \"description\": \"อุปกรณ์กีฬา\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Supplier",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Response body is valid\", function () {",
+              "  pm.expect(pm.response.json().data).to.have.property(\"id\");",
+              "});",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"newSupplierId\", pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"supplier_code\": \"SUP-{{$timestamp}}\",\n  \"name\": \"SportGear Co., Ltd.\",\n  \"email\": \"sales{{$timestamp}}@sportgear.co.th\",\n  \"phone\": \"021112222\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/suppliers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "suppliers"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Supplier",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplier_code\": \"SUP-{{$timestamp}}\",\n  \"name\": \"SportGear Co., Ltd.\",\n  \"email\": \"sales{{$timestamp}}@sportgear.co.th\",\n  \"phone\": \"021112222\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/suppliers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "suppliers"
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "cross-origin-opener-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "cross-origin-resource-policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "origin-agent-cluster",
+              "value": "?1"
+            },
+            {
+              "key": "referrer-policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "strict-transport-security",
+              "value": "max-age=15552000; includeSubDomains"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "x-dns-prefetch-control",
+              "value": "off"
+            },
+            {
+              "key": "x-download-options",
+              "value": "noopen"
+            },
+            {
+              "key": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "x-permitted-cross-domain-policies",
+              "value": "none"
+            },
+            {
+              "key": "x-xss-protection",
+              "value": "0"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "245"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"f5-UDuWTpGeqk7hsNlj/3uRMXk9AZQ\""
+            },
+            {
+              "key": "date",
+              "value": "Sun, 11 Oct 2026 04:10:29 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"message\": \"เพิ่มข้อมูลผู้จัดจำหน่ายสำเร็จ\",\n  \"data\": {\n    \"id\": 19,\n    \"supplier_code\": \"SUP-1791691829\",\n    \"name\": \"SportGear Co., Ltd.\",\n    \"email\": \"sales1791691829@sportgear.co.th\",\n    \"phone\": \"021112222\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Current Admin",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Role is admin\", function () { pm.expect(pm.response.json().data.role).to.eql(\"admin\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Change Admin Password",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/change-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "change-password"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"oldPassword\": \"{{adminPassword}}\",\n  \"newPassword\": \"TempPass#2026\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Change Admin Password back (restore)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/change-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "change-password"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"oldPassword\": \"TempPass#2026\",\n  \"newPassword\": \"{{adminPassword}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Product (สินค้าที่เพิ่งสร้าง)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products/{{newProductId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "{{newProductId}}"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Categories",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/categories",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "categories"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Has product_count\", function () { pm.expect(pm.response.json().data[0]).to.have.property(\"product_count\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Category (หมวดหมู่ที่เพิ่งสร้าง)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/categories/{{newCategoryId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "categories",
+            "{{newCategoryId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Updated description\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Category (หมวดหมู่ที่เพิ่งสร้าง)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/categories/{{newCategoryId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "categories",
+            "{{newCategoryId}}"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Suppliers",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/suppliers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "suppliers"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Has product_count\", function () { pm.expect(pm.response.json().data[0]).to.have.property(\"product_count\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Supplier (ผู้จัดจำหน่ายที่เพิ่งสร้าง)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/suppliers/{{newSupplierId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "suppliers",
+            "{{newSupplierId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"021234567\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Supplier (ผู้จัดจำหน่ายที่เพิ่งสร้าง)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/suppliers/{{newSupplierId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "suppliers",
+            "{{newSupplierId}}"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@stockpro.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "admin@stockpro.com1"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "newProductId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newCategoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newSupplierId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  }
+}

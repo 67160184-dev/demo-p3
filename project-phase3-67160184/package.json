@@ -1,0 +1,61 @@
+{
+  "name": "project-phase3-67160184-P5",
+  "version": "1.0.0",
+  "description": "Product & Inventory Management Backend Service - Phase 3 (Final Integration & Frontend)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest --coverage"
+  },
+  "keywords": [
+    "express",
+    "mysql2",
+    "products",
+    "inventory"
+  ],
+  "author": "Danaiwat Pechnongchum",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.23.3",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.3.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ],
+    "globalSetup": "<rootDir>/src/__tests__/setup/global-setup.js",
+    "setupFiles": [
+      "<rootDir>/src/__tests__/setup/env.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "db.js",
+      "!src/__tests__/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "text-summary",
+      "json-summary"
+    ],
+    "testTimeout": 20000
+  }
+}

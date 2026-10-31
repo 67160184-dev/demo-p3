@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<!-- กำหนดภาษาเอกสารเป็นไทยเพื่อช่วยการอ่านและเทคโนโลยีช่วยเหลือ -->
+<html lang="th">
+<!-- รวม metadata ชื่อหน้า และไฟล์ CSS ที่เบราว์เซอร์ต้องโหลด -->
+<head>
+  <!-- ให้หน้าเว็บแสดงภาษาไทยด้วย UTF-8 -->
+  <meta charset="UTF-8" />
+  <!-- ให้หน้าปรับขนาดตามความกว้างอุปกรณ์ -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- ชื่อที่แสดงบนแท็บของเบราว์เซอร์ -->
+  <title>StockPro - จัดการสินค้า</title>
+  <!-- กำหนดไอคอนแท็บของหน้าเว็บ -->
+  <link rel="icon" href="data:," />
+  <!-- โหลดกฎหน้าตาจาก style.css -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<!-- เริ่มส่วนที่แสดงผลจริงในหน้าเว็บ -->
+<body>
+  <!-- แถบหัวเว็บที่รวมชื่อระบบ แท็บ และบัญชี -->
+  <header class="appbar">
+    <!-- จัดวางโลโก้ เมนู และบัญชีในแถบหัว -->
+    <div class="appbar-inner">
+      <!-- แสดงชื่อและคำอธิบายสั้นของระบบ -->
+      <div class="brand">📦 StockPro<small>ระบบจัดการสินค้า</small></div>
+      <!-- เมนูแท็บสินค้า หมวดหมู่ และผู้จัดจำหน่าย -->
+      <nav class="tabs" role="tablist" aria-label="เมนูหลัก">
+        <!-- แสดงจำนวนสินค้าบนแท็บ -->
+        <button type="button" class="tab" role="tab" data-tab="products" aria-selected="true">สินค้า<span class="count" id="count-products">-</span></button>
+        <!-- แสดงจำนวนหมวดหมู่บนแท็บ -->
+        <button type="button" class="tab" role="tab" data-tab="categories" aria-selected="false">หมวดหมู่<span class="count" id="count-categories">-</span></button>
+        <!-- แสดงจำนวนผู้จัดจำหน่ายบนแท็บ -->
+        <button type="button" class="tab" role="tab" data-tab="suppliers" aria-selected="false">ผู้จัดจำหน่าย<span class="count" id="count-suppliers">-</span></button>
+      </nav>
+      <!-- รวมปุ่มเข้าสู่ระบบกับเมนูบัญชี -->
+      <div class="auth-box">
+        <!-- เปิดฟอร์มเข้าสู่ระบบ -->
+        <button type="button" id="login-btn" class="appbar-btn viewer-only">🔑 เข้าสู่ระบบ</button>
+        <!-- เมนูบัญชี: กดปุ่ม "บัญชี" แล้วค่อยเห็นเปลี่ยนรหัสผ่าน/ออกจากระบบ -->
+        <div class="account admin-only">
+          <!-- เปิดหรือปิดเมนูบัญชี -->
+          <button type="button" id="account-btn" class="appbar-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu">👤 บัญชี ▾</button>
+          <!-- เก็บคำสั่งเปลี่ยนรหัสผ่านและออกจากระบบ -->
+          <div id="account-menu" class="account-menu" role="menu" hidden>
+            <!-- แสดงสถานะและอีเมลของผู้ดูแลระบบ -->
+            <div class="account-info">
+              <!-- แสดงข้อความรองด้วยขนาดเล็ก -->
+              <small>เข้าสู่ระบบเป็นผู้ดูแลระบบ</small>
+              <!-- แสดงอีเมลผู้ดูแลระบบ -->
+              <b id="auth-user"></b>
+            </div>
+            <!-- เปิดฟอร์มเปลี่ยนรหัสผ่าน -->
+            <button type="button" id="change-password-btn" role="menuitem">🔒 เปลี่ยนรหัสผ่าน</button>
+            <!-- ออกจากระบบและล้าง token -->
+            <button type="button" id="logout-btn" role="menuitem" class="logout">↪ ออกจากระบบ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- เนื้อหาสามแท็บใช้ data-panel ให้ showTab() ใน app.js สลับการแสดงผล -->
+  <!-- เนื้อหาหลักของแอป -->
+  <main>
+    <!-- แสดงข้อความโหมดผู้เยี่ยมชมเมื่อยังไม่เข้าสู่ระบบ -->
+    <div class="viewer-banner viewer-only">
+      <!-- แสดงข้อความประกอบสถานะหรือคำแนะนำในส่วนนี้ -->
+      👀 กำลังดูแบบผู้เยี่ยมชม (ดูและค้นหาได้อย่างเดียว) —
+      <!-- เปิดฟอร์มเข้าสู่ระบบจากแถบผู้เยี่ยมชม -->
+      <button type="button" id="banner-login" class="link">เข้าสู่ระบบเป็นผู้ดูแลระบบ</button> เพื่อเพิ่ม แก้ไข หรือลบข้อมูล
+    </div>
+    <!-- ========== สินค้า ========== -->
+    <!-- แผงเนื้อหาแท็บ products -->
+    <section data-panel="products" role="tabpanel">
+      <!-- จัดหัวข้อหน้าและปุ่มเพิ่มข้อมูล -->
+      <div class="page-head">
+        <!-- จัดกลุ่มองค์ประกอบที่อยู่ร่วมกันในส่วนนี้ -->
+        <div>
+          <!-- แสดงชื่อแท็บปัจจุบันเป็นหัวข้อหลัก -->
+          <h1>สินค้า</h1>
+          <!-- อธิบายเนื้อหาหรือผลกระทบของการทำรายการ -->
+          <p>รายการสินค้าทั้งหมดในคลัง</p>
+        </div>
+        <!-- เปิดฟอร์มเพิ่มสินค้า -->
+        <button type="button" class="primary admin-only" id="add-product">＋ เพิ่มสินค้า</button>
+      </div>
+      <!-- ล้อมเนื้อหาตารางไว้ในกรอบสีขาว -->
+      <div class="card">
+        <!-- ช่องค้นหาและตัวกรองทำงานกับแถวที่ app.js โหลดไว้ ไม่ส่งคำขอใหม่ทุกครั้งที่พิมพ์ -->
+        <div class="toolbar">
+          <!-- รับคำค้นหาสินค้า -->
+          <input type="search" id="product-search" placeholder="🔍 ค้นหาชื่อสินค้า, SKU, หมวดหมู่ หรือผู้จัดจำหน่าย" aria-label="ค้นหาสินค้า" />
+          <!-- กรองสินค้าในหมวดที่เลือก -->
+          <select id="filter-category" aria-label="กรองตามหมวดหมู่"><option value="">ทุกหมวดหมู่</option></select>
+          <!-- กรองสินค้าตามผู้จัดจำหน่าย -->
+          <select id="filter-supplier" aria-label="กรองตามผู้จัดจำหน่าย"><option value="">ทุกผู้จัดจำหน่าย</option></select>
+          <!-- แสดงจำนวนผลค้นหาสินค้า -->
+          <span id="search-result" class="search-result"></span>
+        </div>
+        <!-- ปุ่มสกุลเงินเรียกอัตราแลกเปลี่ยนครั้งเดียว แล้วแปลงราคาในตารางฝั่งหน้าเว็บ -->
+        <div class="currency-bar">
+          <!-- ชื่อกลุ่มตัวเลือกสกุลเงิน -->
+          <span id="currency-label" class="currency-label">แสดงราคาเป็น</span>
+          <!-- กลุ่มปุ่มเลือกสกุลเงิน -->
+          <div id="currency-chips" class="chips-inline" role="radiogroup" aria-labelledby="currency-label">
+            <!-- ตัวเลือกแสดงราคาเป็น THB -->
+            <button type="button" class="chip chip-small" role="radio" aria-checked="true" data-currency="THB">บาท</button>
+            <!-- ตัวเลือกแสดงราคาเป็น USD -->
+            <button type="button" class="chip chip-small" role="radio" aria-checked="false" data-currency="USD">USD</button>
+            <!-- ตัวเลือกแสดงราคาเป็น EUR -->
+            <button type="button" class="chip chip-small" role="radio" aria-checked="false" data-currency="EUR">EUR</button>
+            <!-- ตัวเลือกแสดงราคาเป็น JPY -->
+            <button type="button" class="chip chip-small" role="radio" aria-checked="false" data-currency="JPY">JPY</button>
+          </div>
+          <!-- แสดงอัตราแลกเปลี่ยนหรือข้อผิดพลาด -->
+          <span id="currency-note" class="currency-note" role="status" aria-live="polite"></span>
+        </div>
+        <!-- ทำให้ตารางเลื่อนภายในกรอบเมื่อมีหลายแถว -->
+        <div class="table-wrap">
+          <!-- ตารางแสดงข้อมูล โดย JavaScript จะเติมแถวใน tbody -->
+          <table class="data-table">
+            <!-- เริ่มส่วนหัวคอลัมน์ของตาราง -->
+            <thead>
+              <!-- เริ่มแถวหัวตารางและกำหนดชื่อคอลัมน์ -->
+              <tr>
+                <!-- หัวคอลัมน์ของตารางนี้ -->
+                <th class="id">ID สินค้า</th><th>ชื่อสินค้า</th><th class="hide-md">SKU</th><th class="hide-xs">หมวดหมู่</th>
+                <!-- หัวคอลัมน์ราคาตามสกุลที่เลือก -->
+                <th class="hide-sm">ผู้จัดจำหน่าย</th><th class="num" id="price-th">ราคา (บาท)</th><th class="num">สต็อก</th><th class="actions admin-only"></th>
+              </tr>
+            </thead>
+            <!-- ตำแหน่งใส่แถวสินค้า -->
+            <tbody id="product-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== หมวดหมู่ ========== -->
+    <!-- แผงเนื้อหาแท็บ categories -->
+    <section data-panel="categories" role="tabpanel" hidden>
+      <!-- จัดหัวข้อหน้าและปุ่มเพิ่มข้อมูล -->
+      <div class="page-head">
+        <!-- จัดกลุ่มองค์ประกอบที่อยู่ร่วมกันในส่วนนี้ -->
+        <div>
+          <!-- แสดงชื่อแท็บปัจจุบันเป็นหัวข้อหลัก -->
+          <h1>หมวดหมู่สินค้า</h1>
+          <!-- อธิบายเนื้อหาหรือผลกระทบของการทำรายการ -->
+          <p>ลบหมวดหมู่แล้ว สินค้าในหมวดนั้นจะถูกลบไปด้วย</p>
+        </div>
+        <!-- เปิดฟอร์มเพิ่มหมวดหมู่ -->
+        <button type="button" class="primary admin-only" id="add-category">＋ เพิ่มหมวดหมู่</button>
+      </div>
+      <!-- ล้อมเนื้อหาตารางไว้ในกรอบสีขาว -->
+      <div class="card">
+        <!-- รวมช่องค้นหาและตัวกรอง -->
+        <div class="toolbar">
+          <!-- รับคำค้นหาหมวดหมู่ -->
+          <input type="search" id="category-search" placeholder="🔍 ค้นหาชื่อหมวดหมู่ หรือคำอธิบาย" aria-label="ค้นหาหมวดหมู่" />
+          <!-- แสดงจำนวนผลค้นหาหมวดหมู่ -->
+          <span id="category-search-result" class="search-result"></span>
+        </div>
+        <!-- ทำให้ตารางเลื่อนภายในกรอบเมื่อมีหลายแถว -->
+        <div class="table-wrap">
+          <!-- ตารางแสดงข้อมูล โดย JavaScript จะเติมแถวใน tbody -->
+          <table class="data-table">
+            <!-- เริ่มส่วนหัวคอลัมน์ของตาราง -->
+            <thead>
+              <!-- เริ่มแถวหัวตารางและกำหนดชื่อคอลัมน์ -->
+              <tr><th class="id hide-xs">ID หมวดหมู่</th><th>ชื่อหมวดหมู่</th><th class="hide-sm">คำอธิบาย</th><th class="num">จำนวนสินค้า</th><th class="actions"></th><th class="actions admin-only"></th></tr>
+            </thead>
+            <!-- ตำแหน่งใส่แถวหมวดหมู่ -->
+            <tbody id="category-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ผู้จัดจำหน่าย ========== -->
+    <!-- แผงเนื้อหาแท็บ suppliers -->
+    <section data-panel="suppliers" role="tabpanel" hidden>
+      <!-- จัดหัวข้อหน้าและปุ่มเพิ่มข้อมูล -->
+      <div class="page-head">
+        <!-- จัดกลุ่มองค์ประกอบที่อยู่ร่วมกันในส่วนนี้ -->
+        <div>
+          <!-- แสดงชื่อแท็บปัจจุบันเป็นหัวข้อหลัก -->
+          <h1>ผู้จัดจำหน่าย</h1>
+          <!-- อธิบายเนื้อหาหรือผลกระทบของการทำรายการ -->
+          <p>ลบผู้จัดจำหน่ายแล้ว สินค้าที่ผูกอยู่ยังอยู่ แต่จะไม่มีผู้จัดจำหน่าย</p>
+        </div>
+        <!-- เปิดฟอร์มเพิ่มผู้จัดจำหน่าย -->
+        <button type="button" class="primary admin-only" id="add-supplier">＋ เพิ่มผู้จัดจำหน่าย</button>
+      </div>
+      <!-- ล้อมเนื้อหาตารางไว้ในกรอบสีขาว -->
+      <div class="card">
+        <!-- รวมช่องค้นหาและตัวกรอง -->
+        <div class="toolbar">
+          <!-- รับคำค้นหาผู้จัดจำหน่าย -->
+          <input type="search" id="supplier-search" placeholder="🔍 ค้นหาชื่อบริษัท, รหัส, อีเมล หรือเบอร์โทร" aria-label="ค้นหาผู้จัดจำหน่าย" />
+          <!-- แสดงจำนวนผลค้นหาผู้จัดจำหน่าย -->
+          <span id="supplier-search-result" class="search-result"></span>
+        </div>
+        <!-- ทำให้ตารางเลื่อนภายในกรอบเมื่อมีหลายแถว -->
+        <div class="table-wrap">
+          <!-- ตารางแสดงข้อมูล โดย JavaScript จะเติมแถวใน tbody -->
+          <table class="data-table">
+            <!-- เริ่มส่วนหัวคอลัมน์ของตาราง -->
+            <thead>
+              <!-- เริ่มแถวหัวตารางและกำหนดชื่อคอลัมน์ -->
+              <tr><th class="id hide-xs">ID ผู้จัดจำหน่าย</th><th>ชื่อบริษัท</th><th class="hide-md">รหัส</th><th class="hide-sm">อีเมล</th><th class="hide-md">เบอร์โทร</th><th class="num">จำนวนสินค้า</th><th class="actions"></th><th class="actions admin-only"></th></tr>
+            </thead>
+            <!-- ตำแหน่งใส่แถวผู้จัดจำหน่าย -->
+            <tbody id="supplier-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ฟอร์มกลางใช้ร่วมกันสำหรับเพิ่ม แก้ไข เข้าสู่ระบบ และเปลี่ยนรหัสผ่าน; app.js สร้างช่องตามงาน -->
+  <!-- หน้าต่างฟอร์มกลางสำหรับเพิ่มและแก้ไขข้อมูล -->
+  <dialog id="form-dialog" aria-labelledby="dialog-title">
+    <!-- รับการส่งแบบฟอร์ม -->
+    <form id="dialog-form" novalidate>
+      <!-- แสดงหัวข้อของหน้าต่างฟอร์ม -->
+      <div class="dialog-head">
+        <!-- แสดงชื่อฟอร์มตามงานที่เปิด -->
+        <h2 id="dialog-title"></h2>
+        <!-- อธิบายเนื้อหาหรือผลกระทบของการทำรายการ -->
+        <p>ช่องที่มี * ต้องกรอก</p>
+      </div>
+      <!-- แสดงช่องข้อมูลและข้อความของหน้าต่าง -->
+      <div class="dialog-body">
+        <!-- ตำแหน่งสร้างช่องฟอร์มจาก JavaScript -->
+        <div id="dialog-fields" class="form-grid"></div>
+        <!-- แสดงสถานะการบันทึกหรือข้อผิดพลาด -->
+        <p id="dialog-msg" class="dialog-msg"></p>
+      </div>
+      <!-- จัดปุ่มคำสั่งท้ายหน้าต่าง -->
+      <div class="dialog-foot">
+        <!-- เติมข้อมูลตัวอย่าง -->
+        <button type="button" id="dialog-extra" class="link" hidden></button>
+        <!-- ล้างค่าที่กรอก -->
+        <button type="button" id="dialog-clear" class="link muted" hidden>ล้างฟอร์ม</button>
+        <!-- ดันปุ่มคำสั่งไปอยู่ปลายแถว -->
+        <span class="spacer"></span>
+        <!-- ปิดฟอร์มโดยไม่บันทึก -->
+        <button type="button" id="dialog-cancel">ยกเลิก</button>
+        <!-- ส่งข้อมูลที่ตรวจผ่านแล้ว -->
+        <button type="submit" id="dialog-submit" class="primary">บันทึก</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- หน้าต่างอ่านข้อมูลหมวดหมู่หรือผู้จัดจำหน่าย พร้อมสินค้าที่เกี่ยวข้อง -->
+  <!-- หน้าต่างอ่านรายละเอียด -->
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <!-- แสดงหัวข้อของหน้าต่างฟอร์ม -->
+    <div class="dialog-head">
+      <!-- แสดงชื่อรายการที่เปิด -->
+      <h2 id="detail-title"></h2>
+      <!-- บอกชนิดข้อมูลที่กำลังดู -->
+      <p id="detail-subtitle"></p>
+    </div>
+    <!-- แสดงช่องข้อมูลและข้อความของหน้าต่าง -->
+    <div class="dialog-body">
+      <!-- แสดงข้อมูลหมวดหมู่หรือผู้จัดจำหน่าย -->
+      <dl id="detail-info" class="detail-info"></dl>
+      <!-- แสดงหัวข้อและจำนวนสินค้าที่เกี่ยวข้อง -->
+      <h3 id="detail-products-title" class="detail-products-title"></h3>
+      <!-- แสดงรายการสินค้าที่เกี่ยวข้อง -->
+      <ul id="detail-products" class="detail-products"></ul>
+    </div>
+    <!-- จัดปุ่มคำสั่งท้ายหน้าต่าง -->
+    <div class="dialog-foot">
+      <!-- ดันปุ่มคำสั่งไปอยู่ปลายแถว -->
+      <span class="spacer"></span>
+      <!-- ปิดหน้าต่างรายละเอียด -->
+      <button type="button" id="detail-close">ปิด</button>
+    </div>
+  </dialog>
+
+  <!-- แสดงข้อความแจ้งผลชั่วคราว -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- โหลดสคริปต์หลัง DOM เพื่อให้การอ้าง id และการผูกเหตุการณ์ทำได้ทันที -->
+  <!-- โหลด JavaScript หลังเนื้อหา HTML เพื่อผูกเหตุการณ์กับองค์ประกอบ -->
+  <script src="app.js"></script>
+</body>
+</html>

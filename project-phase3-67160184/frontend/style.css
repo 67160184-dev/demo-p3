@@ -1,0 +1,170 @@
+:root {
+  --blue: #1a73e8;
+  --blue-hover: #1765cc;
+  --navy: #1f3a5f;
+  --red: #c5221f;
+  --red-soft: #fce8e6;
+  --green: #188038;
+  --line: #e0e3e7;
+  --muted: #5f6368;
+  --bg: #f1f3f6;
+  --head: #f6f8fa;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: sans-serif; color: #202124; background: var(--bg); }
+button, input, select { font: inherit; }
+
+/* ---------- แถบหัวเว็บ + เมนู ---------- */
+.appbar { background: var(--navy); color: #fff; }
+.appbar-inner { max-width: 1100px; margin: 0 auto; padding: 0 1rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.brand { font-size: 1.25rem; font-weight: bold; padding: 0.9rem 0; white-space: nowrap; }
+.brand small { font-size: 0.85rem; font-weight: normal; opacity: 0.8; margin-left: 0.4rem; }
+.tabs { display: flex; gap: 0.25rem; align-self: stretch; }
+.tab { border: none; background: none; color: #d6deea; padding: 0 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-size: 0.98rem; min-height: 3rem; }
+/* ต้องเจาะจงกว่า button:hover:not(:disabled) ด้านล่าง ไม่งั้นพื้นจะเป็นเทาอ่อนจนตัวหนังสือสีขาวมองไม่เห็น */
+.tab:hover:not(:disabled), .tab:focus-visible { color: #fff; background: rgba(255, 255, 255, 0.12); }
+.tab[aria-selected="true"] { color: #fff; font-weight: bold; border-bottom-color: #8ab4f8; }
+.tab .count { display: inline-block; margin-left: 0.35rem; padding: 0 0.45rem; border-radius: 999px; background: rgba(255, 255, 255, 0.18); font-size: 0.8rem; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
+
+/* ---------- เข้าสู่ระบบ: ซ่อน/แสดงตามสถานะ (body.is-admin) ---------- */
+body:not(.is-admin) .admin-only, body.is-admin .viewer-only { display: none !important; }
+.auth-box { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
+.account { position: relative; }
+.account-menu { position: absolute; right: 0; top: calc(100% + 0.4rem); z-index: 20; min-width: 15rem; background: #fff; color: #202124; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); overflow: hidden; }
+.account-info { padding: 0.8rem 1rem; border-bottom: 1px solid var(--line); background: #f8f9fb; display: flex; flex-direction: column; gap: 0.15rem; }
+.account-info small { color: var(--muted); font-size: 0.8rem; }
+.account-info b { font-size: 0.92rem; overflow-wrap: anywhere; }
+.account-menu button { display: block; width: 100%; text-align: left; border: none; border-radius: 0; padding: 0.7rem 1rem; background: #fff; color: #202124; }
+.account-menu button:hover:not(:disabled) { background: #f1f3f4; }
+.account-menu button.logout { color: var(--red); border-top: 1px solid var(--line); }
+/* ระบุพื้นหลังตอนชี้เมาส์เอง ไม่ให้กฎปุ่มทั่วไปทำให้ตัวหนังสือสีขาวมองไม่เห็น */
+.appbar-btn, .appbar-btn:hover:not(:disabled) { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, 0.55); padding: 0.4rem 0.9rem; font-size: 0.9rem; }
+.appbar-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
+.viewer-banner { background: #e8f0fe; border: 1px solid #c6dafc; color: #174ea6; border-radius: 8px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; font-size: 0.92rem; }
+.viewer-banner .link { padding: 0; font-weight: bold; }
+@media (max-width: 640px) { .auth-box { margin: 0 0 0.5rem; width: 100%; justify-content: flex-end; } }
+
+/* ---------- หัวหน้า: ชื่อหน้า + ปุ่มเพิ่ม ---------- */
+.page-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+.page-head h1 { font-size: 1.4rem; margin: 0; }
+.page-head p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.9rem; }
+
+.card { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.toolbar { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; padding: 0.8rem 1rem; border-bottom: 1px solid var(--line); }
+.toolbar input { flex: 1 1 260px; min-width: 0; padding: 0.55rem 0.7rem; border: 1px solid #c4c7cc; border-radius: 6px; font-size: 0.95rem; }
+.toolbar input:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+.toolbar select { flex: 0 1 190px; min-width: 0; padding: 0.55rem 0.6rem; border: 1px solid #c4c7cc; border-radius: 6px; background: #fff; font-size: 0.95rem; }
+.toolbar select:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+@media (max-width: 640px) { .toolbar select { flex: 1 1 140px; } }
+.search-result { color: var(--muted); font-size: 0.88rem; white-space: nowrap; }
+
+/* ---------- ตาราง (หัวตารางติดอยู่ด้านบนตอนเลื่อน) ---------- */
+.table-wrap { max-height: 68vh; overflow: auto; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { position: sticky; top: 0; z-index: 1; background: var(--head); color: #3c4043; font-size: 0.85rem; text-align: left; padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.data-table td { padding: 0.65rem 0.8rem; border-bottom: 1px solid #eef0f2; font-size: 0.92rem; vertical-align: middle; overflow-wrap: anywhere; }
+.data-table tbody tr:hover td { background: #f8f9fb; }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table .num { text-align: right; white-space: nowrap; }
+.data-table .id { color: var(--muted); width: 3rem; }
+.data-table .strong { font-weight: bold; }
+.data-table .sub { color: var(--muted); font-size: 0.85rem; }
+.data-table th.actions, .data-table td.actions { width: 1%; white-space: nowrap; text-align: right; }
+/* แถวที่เพิ่งเพิ่ม/แก้ไข: ฟ้าอ่อน + แถบน้ำเงินด้านซ้าย แล้วค่อยๆ จางหายใน 3 วินาที (JS ลบ class ออกเมื่อจบ) */
+tr.highlight td { animation: highlight-fade 3s ease-out forwards; }
+tr.highlight td:first-child { animation-name: highlight-fade-edge; }
+@keyframes highlight-fade {
+  0%, 35% { background: #e3edfd; }
+  100% { background: transparent; }
+}
+@keyframes highlight-fade-edge {
+  0%, 35% { background: #e3edfd; box-shadow: inset 4px 0 0 var(--blue); }
+  100% { background: transparent; box-shadow: inset 4px 0 0 transparent; }
+}
+tr.msg-row td { text-align: center; color: var(--muted); padding: 2rem 1rem; }
+tr.msg-row.error td { color: var(--red); font-weight: bold; }
+tr.msg-row button.retry { margin-top: 0.7rem; font-weight: normal; }
+.row-actions { display: inline-flex; gap: 0.4rem; }
+
+/* ซ่อนคอลัมน์รองบนจอแคบ */
+@media (max-width: 900px) { .hide-md { display: none; } }
+@media (max-width: 640px) {
+  .hide-sm { display: none; }
+  .appbar-inner { gap: 0; }
+  .brand { padding: 0.7rem 0 0.2rem; width: 100%; }
+  .tabs { width: 100%; }
+  .tab { flex: 1; padding: 0 0.3rem; font-size: 0.9rem; }
+  main { padding: 1rem 0.6rem 2rem; }
+  .data-table th, .data-table td { padding: 0.55rem 0.5rem; font-size: 0.86rem; }
+  .data-table th.num { white-space: normal; }
+  .row-actions { flex-direction: column; }
+}
+@media (max-width: 420px) { .hide-xs { display: none; } .tab .count { display: none; } }
+
+/* ---------- ปุ่ม ---------- */
+button { padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #c4c7cc; background: #fff; color: #202124; cursor: pointer; font-size: 0.93rem; }
+button:hover:not(:disabled) { background: #f1f3f4; }
+button.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: bold; }
+button.primary:hover:not(:disabled) { background: var(--blue-hover); }
+button.danger { color: var(--red); border-color: #f1b6b3; }
+button.danger:hover:not(:disabled) { background: var(--red-soft); }
+button.small { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+.currency-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.7rem; padding: 0.6rem 1rem; border-bottom: 1px solid var(--line); background: #fafbfc; }
+.currency-label { font-size: 0.9rem; font-weight: bold; }
+.chips-inline { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+button.chip.chip-small { flex-direction: row; padding: 0.3rem 0.85rem; border-radius: 999px; font-size: 0.9rem; }
+.currency-note { color: var(--muted); font-size: 0.85rem; }
+.currency-note.error { color: var(--red); font-weight: bold; }
+button.chip { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; padding: 0.6rem 0.3rem; border-radius: 8px; font-weight: bold; font-size: 1rem; }
+button.chip[aria-checked="true"], button.chip[aria-checked="true"]:hover:not(:disabled) { background: var(--blue); border-color: var(--blue); color: #fff; }
+button.link, button.link:hover:not(:disabled) { border: none; background: none; color: var(--blue); text-decoration: underline; padding: 0.5rem 0.2rem; }
+button.link.muted, button.link.muted:hover:not(:disabled) { color: var(--muted); }
+@media (max-width: 480px) { .dialog-foot { flex-wrap: wrap; } .dialog-foot .spacer { flex-basis: 100%; height: 0; } }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ---------- หน้าต่างป๊อปอัปฟอร์ม เพิ่ม/แก้ไข ---------- */
+dialog { width: min(600px, calc(100% - 1.5rem)); border: none; border-radius: 12px; padding: 0; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25); }
+dialog::backdrop { background: rgba(32, 33, 36, 0.5); }
+.dialog-head { padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); }
+.dialog-head h2 { margin: 0; font-size: 1.15rem; }
+.dialog-head p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.85rem; }
+.dialog-body { padding: 1rem 1.2rem; max-height: 65vh; overflow-y: auto; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem 1rem; }
+@media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: 0.3rem; }
+.field label { font-size: 0.88rem; font-weight: bold; }
+.field input, .field select { padding: 0.55rem 0.6rem; border: 1px solid #c4c7cc; border-radius: 6px; background: #fff; font-size: 0.95rem; width: 100%; }
+.field input:focus, .field select:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+.field .invalid { border-color: var(--red); background: #fffafa; }
+.field-hint { color: var(--muted); font-size: 0.8rem; }
+.field-error { color: var(--red); font-size: 0.82rem; min-height: 0; }
+.field-error:empty { display: none; }
+.dialog-msg { margin: 0.9rem 0 0; font-size: 0.9rem; color: var(--muted); }
+.dialog-msg:empty { display: none; }
+.dialog-msg.error { color: var(--red); font-weight: bold; }
+.dialog-foot { display: flex; align-items: center; gap: 0.6rem; padding: 0.9rem 1.2rem; border-top: 1px solid var(--line); background: #fafbfc; }
+.dialog-foot .spacer { flex: 1; }
+
+/* ---------- ชื่อที่กดดูรายละเอียดได้ + หน้าต่างรายละเอียด ---------- */
+button.name-link, button.name-link:hover:not(:disabled) { padding: 0; font: inherit; font-weight: bold; text-align: left; color: #202124; text-decoration: none; }
+button.name-link:hover:not(:disabled) { text-decoration: underline; }
+td.hide-xs button.name-link, td.hide-sm button.name-link { font-weight: normal; }
+.detail-info { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.4rem 1rem; margin: 0; }
+.detail-info dt { color: var(--muted); font-size: 0.88rem; }
+.detail-info dd { margin: 0; overflow-wrap: anywhere; }
+.detail-products-title { margin: 1.1rem 0 0.4rem; font-size: 0.95rem; }
+.detail-products { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; }
+.detail-products li { padding: 0.55rem 0.8rem; border-bottom: 1px solid #eef0f2; }
+.detail-products li:last-child { border-bottom: none; }
+.detail-products b { display: block; overflow-wrap: anywhere; }
+.detail-products small { color: var(--muted); }
+.detail-products li.empty { color: var(--muted); text-align: center; padding: 1.2rem 0.8rem; }
+
+/* ---------- แถบแจ้งผลมุมล่าง ---------- */
+.toast { position: fixed; left: 50%; bottom: 1.2rem; transform: translate(-50%, 1rem); max-width: calc(100% - 2rem); padding: 0.75rem 1.1rem; border-radius: 8px; background: #323232; color: #fff; font-size: 0.93rem; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 10; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.ok::before { content: "✓ "; color: #81c995; font-weight: bold; }
+.toast.error { background: var(--red); }
+.toast.info { background: var(--navy); }

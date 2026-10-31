@@ -1,0 +1,676 @@
+openapi: 3.0.3
+info:
+  title: StockPro - Product Management API
+  description: |
+    ระบบหลังบ้านสำหรับจัดการข้อมูลสินค้า หมวดหมู่ และผู้จัดจำหน่าย (Product & Inventory Management)
+
+    **สิทธิ์การใช้งาน:** ดูข้อมูล (GET) ไม่ต้อง login — เพิ่ม/แก้ไข/ลบ (POST/PATCH/DELETE) ต้อง login เป็น admin
+    ลองใน Swagger: เรียก `POST /api/v1/auth/login` ด้วยบัญชี admin ใน `seed.sql` → คัดลอก `token` → กดปุ่ม **Authorize** ด้านบนแล้ววาง token
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Auth
+  - name: Health
+  - name: Products
+  - name: Categories
+  - name: Suppliers
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: ตรวจสอบสถานะเซิร์ฟเวอร์
+      responses:
+        "200":
+          description: เซิร์ฟเวอร์ทำงานปกติ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: เข้าสู่ระบบผู้ดูแลระบบ รับ JWT
+      description: ตรวจรหัสผ่านด้วย bcrypt ถ้าถูกต้องออก JWT (อายุตาม `JWT_EXPIRES_IN`) อีเมลไม่มีในระบบหรือรหัสผิดตอบ 401 ข้อความเดียวกัน
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: เข้าสู่ระบบสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: ข้อมูลผู้ใช้จาก token (ใช้ตรวจว่า token ยังใช้ได้)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/v1/auth/change-password:
+    patch:
+      tags: [Auth]
+      summary: เปลี่ยนรหัสผ่านของผู้ที่ login อยู่
+      description: ต้องส่งรหัสผ่านเดิมให้ถูกต้อง รหัสผ่านใหม่ยาวอย่างน้อย 8 ตัวอักษรและไม่ซ้ำของเดิม — เก็บเป็น bcrypt hash
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordInput"
+      responses:
+        "200":
+          description: เปลี่ยนรหัสผ่านสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: เปลี่ยนรหัสผ่านสำเร็จ }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/products:
+    get:
+      tags: [Products]
+      summary: ดึงรายการสินค้าทั้งหมดพร้อมหมวดหมู่และผู้จัดจำหน่าย (UC-04)
+      responses:
+        "200":
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      summary: เพิ่มสินค้าใหม่ (UC-03)
+      description: ถ้า `sku` ซ้ำ หรือ `category_id`/`supplier_id` ไม่มีอยู่จริง ฐานข้อมูลจะปฏิเสธและระบบตอบ 500
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: เพิ่มสินค้าสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCreatedResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/products/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ProductId"
+    get:
+      tags: [Products]
+      summary: ดึงข้อมูลสินค้ารายชิ้น
+      responses:
+        "200":
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      summary: แก้ไขข้อมูลสินค้า — ชื่อ, SKU, หมวดหมู่, ผู้จัดจำหน่าย, ราคา, สต็อก (UC-05)
+      description: |
+        ส่งเฉพาะช่องที่ต้องการแก้อย่างน้อย 1 ช่อง (`name`, `sku`, `price`, `stock_quantity`, `category_id`, `supplier_id`) ช่องอื่นนอกจากนี้ถูกละเลย
+        ถ้าไม่ส่งช่องที่แก้ได้เลยตอบ 400 ถ้า `sku` ซ้ำกับสินค้าอื่น หรือ `category_id`/`supplier_id` ไม่มีอยู่จริง ฐานข้อมูลจะปฏิเสธและระบบตอบ 500
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdateInput"
+      responses:
+        "200":
+          description: อัปเดตสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductUpdatedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      summary: ลบสินค้า
+      responses:
+        "200":
+          description: ลบสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/products/{id}/price:
+    parameters:
+      - $ref: "#/components/parameters/ProductId"
+    get:
+      tags: [Products]
+      summary: ราคาสินค้าแปลงเป็นสกุลเงินอื่น (เรียก Exchange Rate API ภายนอก)
+      description: |
+        เรียก API อัตราแลกเปลี่ยนภายนอกด้วย timeout 3 วินาที และ retry ซ้ำ 2 ครั้ง (รวม 3 ครั้ง)
+        เมื่อเกิด network error / timeout / 429 / 5xx หากล้มเหลวครบทุกครั้งจะตอบ 200 พร้อม `fallback: true`
+        และแสดงราคาเป็นบาท (THB) แทน
+      parameters:
+        - name: currency
+          in: query
+          description: รหัสสกุลเงิน 3 ตัวอักษร (ค่าเริ่มต้น USD)
+          schema:
+            type: string
+            default: USD
+            example: USD
+      responses:
+        "200":
+          description: สำเร็จ (ราคาที่แปลงแล้ว หรือราคาเป็น THB กรณี fallback)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPriceResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/categories:
+    get:
+      tags: [Categories]
+      summary: ดึงรายการหมวดหมู่ทั้งหมด พร้อมจำนวนสินค้าในแต่ละหมวด
+      responses:
+        "200":
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryListResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      summary: เพิ่มหมวดหมู่สินค้าใหม่ (UC-01)
+      description: ถ้าชื่อหมวดหมู่ซ้ำ ฐานข้อมูลจะปฏิเสธและระบบตอบ 500
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: เพิ่มหมวดหมู่สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryCreatedResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/categories/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ResourceId"
+    patch:
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      summary: แก้ไขหมวดหมู่ (ชื่อ, คำอธิบาย)
+      description: ส่งเฉพาะช่องที่ต้องการแก้อย่างน้อย 1 ช่อง ไม่ส่งเลยตอบ 400 ถ้าชื่อซ้ำกับหมวดหมู่อื่น ฐานข้อมูลจะปฏิเสธและระบบตอบ 500
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdateInput"
+      responses:
+        "200":
+          description: อัปเดตสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductUpdatedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      summary: ลบหมวดหมู่
+      description: สินค้าทุกชิ้นในหมวดนี้ถูกลบไปด้วย (`ON DELETE CASCADE` ใน schema.sql)
+      responses:
+        "200":
+          description: ลบสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/suppliers:
+    get:
+      tags: [Suppliers]
+      summary: ดึงรายการผู้จัดจำหน่ายทั้งหมด พร้อมจำนวนสินค้าที่ผูกอยู่
+      responses:
+        "200":
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupplierListResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [Suppliers]
+      security:
+        - bearerAuth: []
+      summary: เพิ่มข้อมูลผู้จัดจำหน่ายใหม่ (UC-02)
+      description: ถ้า `supplier_code` หรือ `email` ซ้ำ ฐานข้อมูลจะปฏิเสธและระบบตอบ 500
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplierInput"
+      responses:
+        "201":
+          description: เพิ่มผู้จัดจำหน่ายสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupplierCreatedResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/v1/suppliers/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ResourceId"
+    patch:
+      tags: [Suppliers]
+      security:
+        - bearerAuth: []
+      summary: แก้ไขผู้จัดจำหน่าย (ชื่อ, อีเมล, เบอร์โทร, รหัส)
+      description: ส่งเฉพาะช่องที่ต้องการแก้อย่างน้อย 1 ช่อง ไม่ส่งเลยตอบ 400 ถ้า `email` หรือ `supplier_code` ซ้ำ ฐานข้อมูลจะปฏิเสธและระบบตอบ 500
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplierUpdateInput"
+      responses:
+        "200":
+          description: อัปเดตสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductUpdatedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [Suppliers]
+      security:
+        - bearerAuth: []
+      summary: ลบผู้จัดจำหน่าย
+      description: สินค้าที่ผูกอยู่ไม่ถูกลบ แต่ `supplier_id` เปลี่ยนเป็น null (`ON DELETE SET NULL` ใน schema.sql)
+      responses:
+        "200":
+          description: ลบสำเร็จ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "token จาก `POST /api/v1/auth/login` ส่งใน header `Authorization: Bearer <token>`"
+  parameters:
+    ProductId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 1
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 4
+  responses:
+    BadRequest:
+      description: คำขอไม่ถูกต้อง
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: ไม่ได้ login (NO_TOKEN), token ไม่ถูกต้องหรือหมดอายุ (INVALID_TOKEN) หรืออีเมล/รหัสผ่าน (หรือรหัสผ่านเดิมตอนเปลี่ยนรหัส) ผิด (INVALID_CREDENTIALS)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: login แล้วแต่ไม่ใช่ admin (FORBIDDEN)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: ไม่พบข้อมูลที่ร้องขอ
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalServerError:
+      description: เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์ (รวมถึงฐานข้อมูลปฏิเสธข้อมูล เช่น SKU ซ้ำ)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: admin@stockpro.com }
+        password: { type: string, format: password }
+    ChangePasswordInput:
+      type: object
+      required: [oldPassword, newPassword]
+      properties:
+        oldPassword: { type: string, format: password }
+        newPassword: { type: string, format: password, minLength: 8 }
+    AuthUser:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        email: { type: string, example: admin@stockpro.com }
+        role: { type: string, enum: [admin], example: admin }
+    LoginResponse:
+      type: object
+      properties:
+        message: { type: string, example: เข้าสู่ระบบสำเร็จ }
+        token: { type: string, description: JWT ใช้แนบใน header Authorization }
+        user: { $ref: "#/components/schemas/AuthUser" }
+    MeResponse:
+      type: object
+      properties:
+        message: { type: string }
+        data: { $ref: "#/components/schemas/AuthUser" }
+    HealthResponse:
+      type: object
+      properties:
+        status: { type: string, example: OK }
+        message: { type: string, example: Product API is running }
+    Product:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        sku: { type: string, example: SKU-ELE-001 }
+        product_name: { type: string, example: Wireless Ergonomic Mouse }
+        price: { type: string, description: "DECIMAL(10,2) ที่ mysql2 ส่งกลับเป็น string", example: "890.00" }
+        stock_quantity: { type: integer, example: 50 }
+        category_id: { type: integer, example: 1 }
+        category_name: { type: string, example: Electronics }
+        supplier_id: { type: integer, nullable: true, example: 1 }
+        supplier_name: { type: string, nullable: true, example: "TechSupply Co., Ltd." }
+        created_at: { type: string, format: date-time }
+    ProductInput:
+      type: object
+      required: [category_id, name, price, sku]
+      properties:
+        category_id: { type: integer, example: 1 }
+        supplier_id: { type: integer, nullable: true, example: 1 }
+        name: { type: string, example: USB-C Cable }
+        price: { type: number, example: 199.5 }
+        sku: { type: string, description: ต้องไม่ซ้ำกัน, example: SKU-ELE-002 }
+        stock_quantity: { type: integer, default: 0, example: 30 }
+    ProductUpdateInput:
+      type: object
+      description: ส่งอย่างน้อย 1 ช่อง
+      minProperties: 1
+      properties:
+        name: { type: string, example: Wireless Ergonomic Mouse }
+        sku: { type: string, description: ต้องไม่ซ้ำกับสินค้าอื่น, example: SKU-ELE-001 }
+        price: { type: number, example: 950 }
+        stock_quantity: { type: integer, example: 40 }
+        category_id: { type: integer, example: 1 }
+        supplier_id: { type: integer, nullable: true, description: null = ไม่ระบุผู้จัดจำหน่าย, example: 1 }
+    ProductListResponse:
+      type: object
+      properties:
+        message: { type: string }
+        total: { type: integer }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Product" }
+    ProductResponse:
+      type: object
+      properties:
+        message: { type: string }
+        data: { $ref: "#/components/schemas/Product" }
+    ProductCreatedResponse:
+      type: object
+      properties:
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            sku: { type: string }
+            price: { type: number }
+    ProductUpdatedResponse:
+      type: object
+      properties:
+        message: { type: string }
+        updated_id: { type: string, example: "1" }
+    DeletedResponse:
+      type: object
+      properties:
+        message: { type: string, example: ลบสินค้าสำเร็จ }
+        deleted_id: { type: string, example: "4" }
+    ProductPriceResponse:
+      type: object
+      properties:
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            price_thb: { type: number }
+            currency: { type: string, description: สกุลเงินของ converted_price (THB เมื่อ fallback) }
+            rate: { type: number, description: อัตราแลกเปลี่ยน THB เป็น currency (ไม่มีเมื่อ fallback) }
+            converted_price: { type: number }
+            fallback: { type: boolean, description: true เมื่อเรียก API ภายนอกไม่สำเร็จ }
+    Category:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+    CategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: Sports }
+        description: { type: string, example: อุปกรณ์กีฬา }
+    CategoryUpdateInput:
+      type: object
+      description: ส่งอย่างน้อย 1 ช่อง
+      minProperties: 1
+      properties:
+        name: { type: string, description: ต้องไม่ซ้ำกับหมวดหมู่อื่น, example: Sports }
+        description: { type: string, nullable: true, example: อุปกรณ์กีฬา }
+    CategoryCreatedResponse:
+      type: object
+      properties:
+        message: { type: string }
+        data: { $ref: "#/components/schemas/Category" }
+    CategoryListResponse:
+      type: object
+      properties:
+        message: { type: string }
+        total: { type: integer }
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Category"
+              - type: object
+                properties:
+                  product_count: { type: integer, example: 1 }
+    Supplier:
+      type: object
+      properties:
+        id: { type: integer }
+        supplier_code: { type: string }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string, nullable: true }
+    SupplierInput:
+      type: object
+      required: [supplier_code, name, email]
+      properties:
+        supplier_code: { type: string, example: SUP-004 }
+        name: { type: string, example: "SportGear Co., Ltd." }
+        email: { type: string, format: email, example: sales@sportgear.co.th }
+        phone: { type: string, example: "021112222" }
+    SupplierUpdateInput:
+      type: object
+      description: ส่งอย่างน้อย 1 ช่อง
+      minProperties: 1
+      properties:
+        supplier_code: { type: string, description: ต้องไม่ซ้ำ, example: SUP-004 }
+        name: { type: string, example: "SportGear Co., Ltd." }
+        email: { type: string, format: email, description: ต้องไม่ซ้ำ, example: sales@sportgear.co.th }
+        phone: { type: string, nullable: true, example: "021112222" }
+    SupplierCreatedResponse:
+      type: object
+      properties:
+        message: { type: string }
+        data: { $ref: "#/components/schemas/Supplier" }
+    SupplierListResponse:
+      type: object
+      properties:
+        message: { type: string }
+        total: { type: integer }
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Supplier"
+              - type: object
+                properties:
+                  product_count: { type: integer, example: 1 }
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: NOT_FOUND }
+            message: { type: string }
+            details: { type: string, description: ปรากฏเฉพาะ INTERNAL_SERVER_ERROR }

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StockPro - จัดการสินค้า</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="appbar-inner">
+      <div class="brand">📦 StockPro<small>ระบบจัดการสินค้า</small></div>
+      <nav class="tabs" role="tablist" aria-label="เมนูหลัก">
+        <button type="button" class="tab" role="tab" data-tab="products" aria-selected="true">สินค้า<span class="count" id="count-products">-</span></button>
+        <button type="button" class="tab" role="tab" data-tab="categories" aria-selected="false">หมวดหมู่<span class="count" id="count-categories">-</span></button>
+        <button type="button" class="tab" role="tab" data-tab="suppliers" aria-selected="false">ผู้จัดจำหน่าย<span class="count" id="count-suppliers">-</span></button>
+      </nav>
+      <div class="auth-box">
+        <button type="button" id="login-btn" class="appbar-btn viewer-only">🔑 เข้าสู่ระบบ</button>
+        <!-- เมนูบัญชี: กดปุ่ม "บัญชี" แล้วค่อยเห็นเปลี่ยนรหัสผ่าน/ออกจากระบบ -->
+        <div class="account admin-only">
+          <button type="button" id="account-btn" class="appbar-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu">👤 บัญชี ▾</button>
+          <div id="account-menu" class="account-menu" role="menu" hidden>
+            <div class="account-info">
+              <small>เข้าสู่ระบบเป็นผู้ดูแลระบบ</small>
+              <b id="auth-user"></b>
+            </div>
+            <button type="button" id="change-password-btn" role="menuitem">🔒 เปลี่ยนรหัสผ่าน</button>
+            <button type="button" id="logout-btn" role="menuitem" class="logout">↪ ออกจากระบบ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="viewer-banner viewer-only">
+      👀 กำลังดูแบบผู้เยี่ยมชม (ดูและค้นหาได้อย่างเดียว) —
+      <button type="button" id="banner-login" class="link">เข้าสู่ระบบเป็นผู้ดูแลระบบ</button> เพื่อเพิ่ม แก้ไข หรือลบข้อมูล
+    </div>
+    <!-- ========== สินค้า ========== -->
+    <section data-panel="products" role="tabpanel">
+      <div class="page-head">
+        <div>
+          <h1>สินค้า</h1>
+          <p>รายการสินค้าทั้งหมดในคลัง</p>
+        </div>
+        <button type="button" class="primary admin-only" id="add-product">＋ เพิ่มสินค้า</button>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <input type="search" id="product-search" placeholder="🔍 ค้นหาชื่อสินค้า, SKU, หมวดหมู่ หรือผู้จัดจำหน่าย" aria-label="ค้นหาสินค้า" />
+          <select id="filter-category" aria-label="กรองตามหมวดหมู่"><option value="">ทุกหมวดหมู่</option></select>
+          <select id="filter-supplier" aria-label="กรองตามผู้จัดจำหน่าย"><option value="">ทุกผู้จัดจำหน่าย</option></select>
+          <span id="search-result" class="search-result"></span>
+        </div>
+        <div class="currency-bar">
+          <span id="currency-label" class="currency-label">แสดงราคาเป็น</span>
+          <div id="currency-chips" class="chips-inline" role="radiogroup" aria-labelledby="currency-label">
+            <button type="button" class="chip chip-small" role="radio" aria-checked="true" data-currency="THB">บาท</button>
+            <button type="button" class="chip chip-small" role="radio" aria-checked="false" data-currency="USD">USD</button>
+            <button type="button" class="chip chip-small" role="radio" aria-checked="false" data-currency="EUR">EUR</button>
+            <button type="button" class="chip chip-small" role="radio" aria-checked="false" data-currency="JPY">JPY</button>
+          </div>
+          <span id="currency-note" class="currency-note" role="status" aria-live="polite"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="id">ID สินค้า</th><th>ชื่อสินค้า</th><th class="hide-md">SKU</th><th class="hide-xs">หมวดหมู่</th>
+                <th class="hide-sm">ผู้จัดจำหน่าย</th><th class="num" id="price-th">ราคา (บาท)</th><th class="num">สต็อก</th><th class="actions admin-only"></th>
+              </tr>
+            </thead>
+            <tbody id="product-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== หมวดหมู่ ========== -->
+    <section data-panel="categories" role="tabpanel" hidden>
+      <div class="page-head">
+        <div>
+          <h1>หมวดหมู่สินค้า</h1>
+          <p>ลบหมวดหมู่แล้ว สินค้าในหมวดนั้นจะถูกลบไปด้วย</p>
+        </div>
+        <button type="button" class="primary admin-only" id="add-category">＋ เพิ่มหมวดหมู่</button>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <input type="search" id="category-search" placeholder="🔍 ค้นหาชื่อหมวดหมู่ หรือคำอธิบาย" aria-label="ค้นหาหมวดหมู่" />
+          <span id="category-search-result" class="search-result"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th class="id hide-xs">ID หมวดหมู่</th><th>ชื่อหมวดหมู่</th><th class="hide-sm">คำอธิบาย</th><th class="num">จำนวนสินค้า</th><th class="actions"></th><th class="actions admin-only"></th></tr>
+            </thead>
+            <tbody id="category-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ผู้จัดจำหน่าย ========== -->
+    <section data-panel="suppliers" role="tabpanel" hidden>
+      <div class="page-head">
+        <div>
+          <h1>ผู้จัดจำหน่าย</h1>
+          <p>ลบผู้จัดจำหน่ายแล้ว สินค้าที่ผูกอยู่ยังอยู่ แต่จะไม่มีผู้จัดจำหน่าย</p>
+        </div>
+        <button type="button" class="primary admin-only" id="add-supplier">＋ เพิ่มผู้จัดจำหน่าย</button>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <input type="search" id="supplier-search" placeholder="🔍 ค้นหาชื่อบริษัท, รหัส, อีเมล หรือเบอร์โทร" aria-label="ค้นหาผู้จัดจำหน่าย" />
+          <span id="supplier-search-result" class="search-result"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th class="id hide-xs">ID ผู้จัดจำหน่าย</th><th>ชื่อบริษัท</th><th class="hide-md">รหัส</th><th class="hide-sm">อีเมล</th><th class="hide-md">เบอร์โทร</th><th class="num">จำนวนสินค้า</th><th class="actions"></th><th class="actions admin-only"></th></tr>
+            </thead>
+            <tbody id="supplier-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- หน้าต่างป๊อปอัปฟอร์ม ใช้ร่วมกันทั้งเพิ่ม/แก้ไข สินค้า หมวดหมู่ ผู้จัดจำหน่าย -->
+  <dialog id="form-dialog" aria-labelledby="dialog-title">
+    <form id="dialog-form" novalidate>
+      <div class="dialog-head">
+        <h2 id="dialog-title"></h2>
+        <p>ช่องที่มี * ต้องกรอก</p>
+      </div>
+      <div class="dialog-body">
+        <div id="dialog-fields" class="form-grid"></div>
+        <p id="dialog-msg" class="dialog-msg"></p>
+      </div>
+      <div class="dialog-foot">
+        <button type="button" id="dialog-extra" class="link" hidden></button>
+        <button type="button" id="dialog-clear" class="link muted" hidden>ล้างฟอร์ม</button>
+        <span class="spacer"></span>
+        <button type="button" id="dialog-cancel">ยกเลิก</button>
+        <button type="submit" id="dialog-submit" class="primary">บันทึก</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <div class="dialog-head">
+      <h2 id="detail-title"></h2>
+      <p id="detail-subtitle"></p>
+    </div>
+    <div class="dialog-body">
+      <dl id="detail-info" class="detail-info"></dl>
+      <h3 id="detail-products-title" class="detail-products-title"></h3>
+      <ul id="detail-products" class="detail-products"></ul>
+    </div>
+    <div class="dialog-foot">
+      <span class="spacer"></span>
+      <button type="button" id="detail-close">ปิด</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
